@@ -1,7 +1,12 @@
+import os
 from kubernetes import client, config
 
 def audit_pod_security(namespace="free5gc"):
-    config.load_kube_config()
+    try:
+        config.load_kube_config(config_file="~/.kube/config")
+    except Exception:
+        print("Config wasn't found")
+        
     v1 = client.CoreV1Api()
     pods = v1.list_namespaced_pod(namespace)
     

@@ -4,15 +4,17 @@ echo "--- Starting Environment Setup ---"
 
 sudo apt update
 
-#installing libs for pyhton
-pip install -r requirements.txt
-
 #Enable SCTP (for AMF communication)
 sudo modprobe sctp
 echo "sctp" | sudo tee -a /etc/modules
 
-# Install build tools
-sudo apt install -y make gcc
+# Install build tools and python essentials
+sudo apt install -y make gcc python3-pip python3-venv
+
+#setup python
+python3 -m venv venv
+./venv/bin/pip install --upgrade pip
+./venv/bin/pip install -r requirements.txt
 
 # Clone and install gtp5g
 if [ ! -d "gtp5g" ]; then
