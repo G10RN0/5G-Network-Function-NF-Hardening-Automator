@@ -16,7 +16,7 @@ def audit_pod_security(namespace="free5gc"):
         if securityContext is None:
             print("critical: securityContext should be defined ")
         else:
-            if securityContext.privleged:
+            if securityContext.privileged:
                 print("critical")
             if securityContext.run_as_user==0 and not securityContext.run_as_none_root:
                 print("high")
