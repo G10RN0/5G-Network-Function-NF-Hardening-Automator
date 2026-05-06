@@ -18,3 +18,5 @@ def audit_pod_security(namespace="free5gc"):
         read_only_fs = container.security_context.read_only_root_filesystem
         
         print(f"Pod: {pod.metadata.name} | Non-Root: {run_as_non_root} | RO-FS: {read_only_fs}")
+        
+audit_pod_security()
