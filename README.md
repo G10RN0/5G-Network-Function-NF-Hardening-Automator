@@ -1,6 +1,6 @@
 # 5G Network Function (NF) Hardening Automator
 
-## Setting up the Env
+## Setting up the Environment
 ### Step 1. Install Ubuntu server (tested version: 24.10):
 You can also use minikube or kind but the installetion procces will be different.
 ### Step 2. Setting up the machine
@@ -17,8 +17,7 @@ change value YOUR_NODE_NAME_HERE to the name of your node before next step
 ```
 ## Roadmap
 
-- add kube-bench
-- develop "Auditor" (Python)
-- develop the "Hardener" (Remediation)
+- develop "Auditor"
+- develop the "Hardener"
 - improving readme
 

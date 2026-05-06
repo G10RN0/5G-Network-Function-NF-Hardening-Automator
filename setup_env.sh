@@ -9,7 +9,7 @@ sudo modprobe sctp
 echo "sctp" | sudo tee -a /etc/modules
 
 # Install build tools
-sudo apt install -y make gcc git
+sudo apt install -y make gcc
 
 # Clone and install gtp5g
 if [ ! -d "gtp5g" ]; then

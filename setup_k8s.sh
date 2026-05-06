@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "--- Starting K8S Setup ---"
+
 INTERFACE_NAME=$(ip route | grep default | awk '{print $5}' | head -n1)
 echo "Detected interface: $INTERFACE_NAME"
 
@@ -39,3 +41,24 @@ sg microk8s -c "microk8s helm install free5gc-core towards5gs/free5gc \
   --set global.n4network.masterIf=$INTERFACE_NAME \
   --set global.n6network.masterIf=$INTERFACE_NAME \
   --set global.n9network.masterIf=$INTERFACE_NAME"
+
+
+echo "--- K8S ready! ---"
+
+
+echo "--- Starting Kube-bench Setup ---"
+# Download the latest Linux release
+curl -L https://github.com/aquasecurity/kube-bench/releases/download/v0.7.3/kube-bench_0.7.3_linux_amd64.tar.gz -o kube-bench.tar.gz
+
+# Extract it
+tar -xvf kube-bench.tar.gz
+
+# Move it to your path so you can run it anywhere
+sudo mv kube-bench /usr/local/bin/
+
+#sudo kube-bench run --targets node --benchmark cis-1.24-microk8s --config-dir $(pwd)/cfg --json > baseline.json
+
+sudo ln -s /snap/bin/microk8s.kubectl /usr/local/bin/kubectl
+sudo ln -s /snap/bin/microk8s.kubectl /usr/local/bin/kubelet
+
+echo "--- kube-bench ready! ---"
