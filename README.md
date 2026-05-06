@@ -8,15 +8,16 @@ You can also use minikube or kind but the installetion procces will be different
 ```bash
 ./setup_env.sh
 ```
-#### 2. Restart the machine then run second script:
+#### 2.Setup mongodb-pv
+change value YOUR_NODE_NAME_HERE to the name of your node before next step
+
+#### 3.Restart the machine and then run second script:
 ```bash
 ./setup_k8s.sh
 ```
 ## Roadmap
 
-- add setup_env.sh
 - add kube-bench
-- add setup_k8s.sh
 - develop "Auditor" (Python)
 - develop the "Hardener" (Remediation)
 - improving readme

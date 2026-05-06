@@ -15,4 +15,5 @@ spec:
       - matchExpressions:
         - key: kubernetes.io/hostname
           operator: In
-          values: [YOUR_NODE_NAME_HERE]
+          values: 
+          - YOUR_NODE_NAME_HERE
