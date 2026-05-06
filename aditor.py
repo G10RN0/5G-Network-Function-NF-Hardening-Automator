@@ -12,13 +12,15 @@ def audit_pod_security(namespace="free5gc"):
     
     for pod in pods.items:
         container = pod.spec.containers[0]
-        securityContex = container.get('securityContext', {})
-        
-        if securityContex.get("prevliged"):
-            print("critical")
-        if securityContex.get("runAsUser")==0 and not securityContex.get("runAsNoneRoot"):
-            print("high")
-        caps = securityContex.get('capabilities', {})
-        print(caps)
+        securityContext = container.securityContext
+        if securityContext is None:
+            print("critical: securityContext should be defined ")
+        else:
+            if securityContext.privleged:
+                print("critical")
+            if securityContext.run_as_user==0 and not securityContext.run_as_none_root:
+                print("high")
+            caps = securityContext.capabilities
+            print(caps)
         
 audit_pod_security()
