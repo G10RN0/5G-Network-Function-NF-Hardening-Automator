@@ -4,6 +4,9 @@ echo "--- Starting Environment Setup ---"
 
 sudo apt update
 
+#installing libs for pyhton
+pip install -r requirements.txt
+
 #Enable SCTP (for AMF communication)
 sudo modprobe sctp
 echo "sctp" | sudo tee -a /etc/modules
