@@ -12,11 +12,13 @@ def audit_pod_security(namespace="free5gc"):
     
     for pod in pods.items:
         container = pod.spec.containers[0]
-        # CHECK 1: Is it running as root?
-        run_as_non_root = container.security_context.run_as_non_root
-        # CHECK 2: Is the filesystem writable?
-        read_only_fs = container.security_context.read_only_root_filesystem
+        securityContex = container.get('securityContext', {})
         
-        print(f"Pod: {pod.metadata.name} | Non-Root: {run_as_non_root} | RO-FS: {read_only_fs}")
+        if securityContex.get("prevliged"):
+            print("critical")
+        if securityContex.get("runAsUser")==0 and not securityContex.get("runAsNoneRoot"):
+            print("high")
+        caps = securityContex.get('capabilities', {})
+        print(caps)
         
 audit_pod_security()
