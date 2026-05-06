@@ -62,3 +62,9 @@ sudo ln -s /snap/bin/microk8s.kubectl /usr/local/bin/kubectl
 sudo ln -s /snap/bin/microk8s.kubectl /usr/local/bin/kubelet
 
 echo "--- kube-bench ready! ---"
+
+
+# 1. Generate the config file from MicroK8s
+sg microk8s -c "microk8s config" > ~/.kube/config
+# 2. Secure the file permissions (Kubernetes clients prefer this)
+chmod 600 ~/.kube/config
