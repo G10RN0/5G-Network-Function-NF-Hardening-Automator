@@ -12,7 +12,7 @@ def audit_pod_security(namespace="free5gc"):
     
     for pod in pods.items:
         container = pod.spec.containers[0]
-        securityContext = container.securityContext
+        securityContext = container.security_context
         if securityContext is None:
             print("critical: securityContext should be defined ")
         else:
