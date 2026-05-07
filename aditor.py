@@ -13,14 +13,20 @@ def audit_pod_security(namespace="free5gc"):
     for pod in pods.items:
         container = pod.spec.containers[0]
         securityContext = container.security_context
+        
+        print(f"checking conteiner: {container.name}")
         if securityContext is None:
-            print("critical: securityContext should be defined ")
+            print(f"{container.name} ~ no security context")
         else:
+            #checking if pod has root access
             if securityContext.privileged:
-                print("critical")
-            if securityContext.run_as_user==0 and not securityContext.run_as_none_root:
-                print("high")
+                print(f"{container.name} ~ privileged")
+            if securityContext.run_as_user==0 and securityContext.run_as_none_root is False:
+                print(f"{container.name} ~ run as root")
+            if securityContext.allow_privileg_escalation:
+                print(f"{container.name} ~ allow privileged escaletion")
             caps = securityContext.capabilities
             print(caps)
-        
-audit_pod_security()
+
+if __name__ == "__main__":
+    audit_pod_security()
