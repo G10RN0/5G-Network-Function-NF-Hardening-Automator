@@ -20,7 +20,7 @@ sudo chown -R 999:999 /var/snap/microk8s/common/default-storage/mongodb
 sg microk8s -c "microk8s kubectl apply -f mongodb-pv.yaml"
 
 #adding towards5gs/free5gc repo
-sg microk8s -c "microk8s helm repo add towards5gs https://towards5gs.github.io/helm-charts/"
+sg microk8s -c "microk8s helm repo add towards5gs 'https://raw.githubusercontent.com/Orange-OpenSource/towards5gs-helm/main/repo/'"
 sg microk8s -c "microk8s helm repo update"
 
 #creating name space
