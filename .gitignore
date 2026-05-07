@@ -2,3 +2,4 @@ cfg/
 gtp5g/
 venv/
 kube-bench.tar.gz
+image_vulnerability_report.txt
