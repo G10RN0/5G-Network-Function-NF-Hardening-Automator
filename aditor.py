@@ -2,12 +2,14 @@ import subprocess
 import os
 import json
 from kubernetes import client, config
+from datetime import datetime
 
 SCANED_IMAGES = set()
 FINDINGS = []
 IMAGE_REPORT_FILE_PATH = "image_vulnerability_report.json"
 NETWORK_REPORT_FILE_PATH = "network_policy_report.json"
 POD_REPORT_FILE_PATH = "pod_security_report.json"
+KUBE_BENCH_REPORT_FILE_PATH = "infrastructure_report.json"
 
 def image_vulnerability_scan(image_tag):
 
@@ -50,7 +52,7 @@ def image_vulnerability_scan(image_tag):
     
     SCANED_IMAGES.add(image_tag)
 
-def rbac_audit(pod, namespace="free5gc"):
+def rbac_audit(pod, current_container, namespace="free5gc"):
     violations = []
     try:
         config.load_kube_config(config_file="~/.kube/config")
@@ -86,7 +88,7 @@ def rbac_audit(pod, namespace="free5gc"):
             for rule in rules:
                 if "*" in rule.verbs:
                     violation = {
-                        "container": pod.spec.containers[0].name if pod.spec.containers else "unknown",
+                        "container": current_container.name if pod.spec.containers else "unknown",
                         "issue": f"{role_type} '{role_name}' has wildcard permissions",
                         "severity": "CRITICAL"
                     }
@@ -95,7 +97,7 @@ def rbac_audit(pod, namespace="free5gc"):
 
                 if "secrets" in (rule.resources or []) and ("get" in rule.verbs or "list" in rule.verbs):
                     violation = {
-                        "container": pod.spec.containers[0].name if pod.spec.containers else "unknown",
+                        "container": current_container.name if pod.spec.containers else "unknown",
                         "issue": f"{role_type} '{role_name}' can read secrets",
                         "severity": "CRITICAL"
                     }
@@ -104,7 +106,7 @@ def rbac_audit(pod, namespace="free5gc"):
                 
                 if "pods" in (rule.resources or []) and "delete" in rule.verbs:
                     violation = {
-                        "container": pod.spec.containers[0].name if pod.spec.containers else "unknown",
+                        "container": current_container.name if pod.spec.containers else "unknown",
                         "issue": f"{role_type} '{role_name}' can delete pods",
                         "severity": "HIGH"
                     }
@@ -130,6 +132,7 @@ def audit_pod_security(namespace="free5gc"):
         pod_raport = {
             "pod_name": pod.metadata.name,
             "namespace": pod.metadata.namespace,
+            "timestamp": datetime.now().isoformat(),
             "violations": []
         }
 
@@ -250,7 +253,7 @@ def audit_pod_security(namespace="free5gc"):
                                 })
 
                 #rbac
-                rbac_violations = rbac_audit(pod, namespace)
+                rbac_violations = rbac_audit(pod, container, namespace)
                 pod_raport["violations"].extend(rbac_violations)
                 
                 #conteiner image scan
@@ -276,11 +279,47 @@ def kube_bench():
     try:
         output = subprocess.run(["sudo", "kube-bench", "run", "--targets", "node", "--benchmark", "cis-1.24-microk8s", "--config-dir", "cfg", "--json"], capture_output=True, text=True)
         results = json.loads(output.stdout)
+        
+        # Create infrastructure report
+        infrastructure_report = {
+            "timestamp": datetime.now().isoformat(),
+            "benchmark": "cis-1.24-microk8s",
+            "target": "node",
+            "violations": []
+        }
+        
         for section in results.get("Controls", []):
             for test in section.get("tests", []):
                 for result in test.get("results", []):
                     if result.get("status") == "FAIL" or result.get("status") == "WARN":
-                        print(f"test number: {result.get('test_number')}\nDescription: {result.get('test_desc')}\nFIX: {result.get('remediation')}")
+                        violation = {
+                            "test_number": result.get("test_number"),
+                            "description": result.get("test_desc"),
+                            "status": result.get("status"),
+                            "remediation": result.get("remediation"),
+                            "actual_value": result.get("actual_value", ""),
+                            "severity": "CRITICAL" if result.get("status") == "FAIL" else "WARNING"
+                        }
+                        infrastructure_report["violations"].append(violation)
+                        #print(f"test number: {result.get('test_number')}\nDescription: {result.get('test_desc')}\nStatus: {result.get('status')}\nFIX: {result.get('remediation')}\n")
+        
+        # Save infrastructure report
+        try:
+            if os.path.exists(KUBE_BENCH_REPORT_FILE_PATH):
+                with open(KUBE_BENCH_REPORT_FILE_PATH, "r") as f:
+                    report_data = json.load(f)
+            else:
+                report_data = {"infrastructure_audits": []}
+
+            report_data["infrastructure_audits"].append(infrastructure_report)
+
+            with open(KUBE_BENCH_REPORT_FILE_PATH, "w") as f:
+                json.dump(report_data, f, indent=2)
+            
+            print(f"Kube-bench results saved to {KUBE_BENCH_REPORT_FILE_PATH}")
+        except Exception as e:
+            print(f"Error writing infrastructure report: {e}")
+            
     except subprocess.CalledProcessError as e:
         print(f"Error running kube-bench: {e.stderr}")
     except json.JSONDecodeError as e:
@@ -296,6 +335,7 @@ def network_policy_audit(namespace="free5gc"):
 
     network_policy_report = {
         "namespace": namespace,
+        "timestamp": datetime.now().isoformat(),
         "violations": []
     }
 
@@ -321,6 +361,7 @@ def network_policy_audit(namespace="free5gc"):
     except Exception as e:
         print(f"Error writing network policy report: {e}")
 
+#main
 if __name__ == "__main__":
     #cleaning up the file before writing new report
     try:
@@ -335,6 +376,10 @@ if __name__ == "__main__":
         #check if network raport file exists and remove it
         if os.path.exists(NETWORK_REPORT_FILE_PATH):
             os.remove(NETWORK_REPORT_FILE_PATH)
+        
+        #check if infrastructure report file exists and remove it
+        if os.path.exists(KUBE_BENCH_REPORT_FILE_PATH):
+            os.remove(KUBE_BENCH_REPORT_FILE_PATH)
 
     except Exception as e:
         print(f"Error cleaning up report file: {e}")
