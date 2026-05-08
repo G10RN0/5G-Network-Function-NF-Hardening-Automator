@@ -132,6 +132,7 @@ def audit_pod_security(namespace="free5gc"):
         pod_raport = {
             "pod_name": pod.metadata.name,
             "namespace": pod.metadata.namespace,
+            "labels": pod.metadata.labels or {},
             "timestamp": datetime.now().isoformat(),
             "violations": []
         }
