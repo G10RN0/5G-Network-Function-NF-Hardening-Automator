@@ -56,6 +56,9 @@ tar -xvf kube-bench.tar.gz
 # Move it to your path so you can run it anywhere
 sudo mv kube-bench /usr/local/bin/
 
+#removing kube-bench tar file
+sudo rm kube-bench.tar.gz
+
 #sudo kube-bench run --targets node --benchmark cis-1.24-microk8s --config-dir $(pwd)/cfg --json > baseline.json
 
 sudo ln -s /snap/bin/microk8s.kubectl /usr/local/bin/kubectl

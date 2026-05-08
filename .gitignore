@@ -2,3 +2,7 @@ cfg/
 gtp5g/
 venv/
 kube-bench.tar.gz
+image_vulnerability_report.json
+pod_security_report.json
+network_policy_report.json
+infrastructure_report.json
