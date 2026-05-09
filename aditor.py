@@ -189,7 +189,9 @@ def rbac_audit(pod, current_container):
                 if "*" in rule.verbs:
                     violation = {
                         "container": current_container.name if pod.spec.containers else "unknown",
-                        "issue": f"{role_type} '{role_name}' has wildcard permissions",
+                        "issue": "has wildcard permissions",
+                        "role_type": role_type,
+                        "role_name": role_name,
                         "severity": "CRITICAL"
                     }
                     violation = add_compliance_to_violation(violation, "Wildcard permissions")
@@ -201,7 +203,9 @@ def rbac_audit(pod, current_container):
                 if "secrets" in (rule.resources or []) and ("get" in rule.verbs or "list" in rule.verbs):
                     violation = {
                         "container": current_container.name if pod.spec.containers else "unknown",
-                        "issue": f"{role_type} '{role_name}' can read secrets",
+                        "issue": "can read secrets",
+                        "role_type": role_type,
+                        "role_name": role_name,
                         "severity": "CRITICAL"
                     }
                     violation = add_compliance_to_violation(violation, "can read secrets")
@@ -213,7 +217,9 @@ def rbac_audit(pod, current_container):
                 if "pods" in (rule.resources or []) and "delete" in rule.verbs:
                     violation = {
                         "container": current_container.name if pod.spec.containers else "unknown",
-                        "issue": f"{role_type} '{role_name}' can delete pods",
+                        "issue": "can delete pods",
+                        "role_type": role_type,
+                        "role_name": role_name,
                         "severity": "HIGH"
                     }
                     violation = add_compliance_to_violation(violation, "can delete pods")
@@ -379,7 +385,8 @@ def audit_pod_security():
                         print(f"[!] ~ risky host path mount: {volume.host_path.path}")
                         violation = {
                             "container": container.name,
-                            "issue": f"Risky host path mount: {volume.host_path.path}",
+                            "issue": "Risky host path mount",
+                            "mount_path": volume.host_path.path,
                             "severity": "HIGH"
                         }
                         violation = add_compliance_to_violation(violation, "Risky host path mount")
@@ -423,7 +430,8 @@ def audit_pod_security():
                                 print(f"[!] environment variable {env.name} may contain sensitive information")
                                 violation = {
                                     "container": container.name,
-                                    "issue": f"Environment variable '{env.name}' may contain sensitive information",
+                                    "issue": "Environment variable may contain sensitive information",
+                                    "environment_variable": env.name,
                                     "severity": "CRITICAL"
                                 }
                                 violation = add_compliance_to_violation(violation, "may contain sensitive information")

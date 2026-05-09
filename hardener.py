@@ -61,9 +61,102 @@ def harden_pod_security(pod_security_report):
 
             for violation in pod["violations"]:
                 print(f"Hardening violation {violation} for pod {pod['pod_name']} in chart {chart_name}")
-                for component in values:
-                    print(f"Hardening component {component} for pod {pod['pod_name']} in chart {chart_name}")
-            
+
+                #security context hardening measures based on the specific violation type
+                if violation["issue"] == "No security context defined":
+                    #Add a default security context to the values.yaml
+                    values["securityContext"] = {
+                        "allowPrivilegeEscalation": False,
+                        "readOnlyRootFilesystem": True,
+                        "privileged": False,
+                        "seccomp": "runtime/default",
+                        "runAsNonRoot": True,
+                        "runAsUser": 1000,
+                        "capabilities": {
+                            "drop": ["ALL"]
+                        }
+                    }
+                else:
+                    if violation["issue"] == "Privileged container":
+                        #Set privileged to false in the values.yaml
+                        values["securityContext"] = values.get("securityContext", {})
+                        values["securityContext"]["privileged"] = False
+                    elif violation["issue"] == "Running as root":
+                        #Set runAsNonRoot to true in the values.yaml
+                        values["securityContext"] = values.get("securityContext", {})
+                        values["securityContext"]["runAsNonRoot"] = True
+                        values["securityContext"]["runAsUser"] = 1000
+                    elif violation["issue"] == "Privilege escalation allowed":
+                        #Set allowPrivilegeEscalation to false in the values.yaml
+                        values["securityContext"] = values.get("securityContext", {})
+                        values["securityContext"]["allowPrivilegeEscalation"] = False
+                    elif violation["issue"] == "Writable root filesystem":
+                        #Set readOnlyRootFilesystem to true in the values.yaml
+                        values["securityContext"] = values.get("securityContext", {})
+                        values["securityContext"]["readOnlyRootFilesystem"] = True
+                    elif violation["issue"] == "Seccomp is not set":
+                        #Set seccomp to runtime/default in the values.yaml
+                        values["securityContext"] = values.get("securityContext", {})
+                        values["securityContext"]["seccomp"] = "runtime/default"
+                    elif violation["issue"] == "Capabilities are not set and are not dropped by default" or violation["issue"] == "Capabilities are not fully dropped":
+                        #Drop all capabilities in the values.yaml
+                        values["securityContext"] = values.get("securityContext", {})
+                        values["securityContext"]["capabilities"] = {
+                            "drop": ["ALL"]
+                        }
+
+                #iterating through containers in the values.yaml
+                for container in values["spec"]["containers"]:
+
+                    #resource limit hardening measures based on the specific violation type and volume mount hardening
+                    if violation["issue"] == "No resource limits":
+                        #Set resource limits in the values.yaml
+                        container["resources"] = container.get("resources", {})
+                        container["resources"]["limits"] = {
+                            "cpu": "500m",
+                            "memory": "512Mi"
+                        }
+                        container["resources"]["requests"] = {
+                            "cpu": "250m",
+                            "memory": "256Mi"
+                        }
+                    elif violation["issue"] == "No cpu limit":
+                        #Set CPU limits in the values.yaml                        values["resources"] = values.get("resources", {})
+                        container["resources"]["limits"] = container["resources"].get("limits", {})
+                        container["resources"]["limits"]["cpu"] = "500m"
+                        container["resources"]["requests"] = container["resources"].get("requests", {})
+                        container["resources"]["requests"]["cpu"] = "250m"
+                    elif violation["issue"] == "No memory limit":
+                        #Set memory limits in the values.yaml
+                        container["resources"] = container.get("resources", {})
+                        container["resources"]["limits"] = container["resources"].get("limits", {})
+                        container["resources"]["limits"]["memory"] = "512Mi"
+                        container["resources"]["requests"] = container["resources"].get("requests", {})
+                        container["resources"]["requests"]["memory"] = "256Mi"
+                    elif violation["issue"] == "Risky host path mount":
+                        #Set host path volume from the values.yaml
+                        for volume in values["spec"]["volumes"]:
+                            if volume["hostPath"] and volume["hostPath"]["path"] in violation["mount_path"]:
+                                print("[!] ~ Manual Intervention Required")
+                                print(f"[!] ~ Change or remove the host path mount: {volume['hostPath']['path']} in the values.yaml")
+                                print("[!] ~ Avoid these paths: / /etc /root /var/run/docker.sock /var/log")
+
+                    #environment variable hardening measures based on the specific violation type
+                    if violation["issue"] == "Environment variable may contain sensitive information":
+                        #Remove sensitive environment variables from the values.yaml
+                        for env in container.get("env", []):
+                            if any(secret_words in env.value.upper() for secret_words in ["PASS", "TOKEN", "KEY", "SECRET", "PASSWORD"]):
+                                container["env"] = "TEMPLATE_ENV_VARS"
+                                print("[!] ~ Manual Intervention Required")
+                                print(f"[!] ~ Remove or secure the environment variable: {env.name} in the values.yaml")
+
+                    #RBAC hardening measures based on the specific violation type
+                    if violation["issue"] == "has wildcard permissions":
+                        pass 
+                    elif violation["issue"] == "can read secrets":
+                        pass
+                    elif violation["issue"] == "can delete pods":
+                        pass
         else:
             print(f"[WARNING] Chart {chart_name} not found for pod {pod['pod_name']}")
 
