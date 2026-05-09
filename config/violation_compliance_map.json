@@ -1,0 +1,104 @@
+{
+    "No security context defined": {
+        "nist_controls": ["AC-3 (Access Control)", "AC-6 (Least Privilege)"],
+        "cis_benchmarks": ["5.1 (Image Security)"],
+        "severity": "CRITICAL",
+        "remediation": "Define security context for all containers"
+    },
+    "Privileged container": {
+        "nist_controls": ["AC-3 (Access Control)", "AC-6 (Least Privilege)"],
+        "cis_benchmarks": ["5.1.1 (Privileged Pods)"],
+        "severity": "CRITICAL",
+        "remediation": "Set privileged: false in security context"
+    },
+    "Running as root": {
+        "nist_controls": ["AC-6 (Least Privilege)", "AC-2 (Account Management)"],
+        "cis_benchmarks": ["5.1.4 (Run as Non-root User)"],
+        "severity": "CRITICAL",
+        "remediation": "Set runAsNonRoot: true and specify runAsUser with non-zero value"
+    },
+    "Privilege escalation allowed": {
+        "nist_controls": ["AC-3 (Access Control)", "AC-6 (Least Privilege)"],
+        "cis_benchmarks": ["5.1.5 (Prevent Privilege Escalation)"],
+        "severity": "HIGH",
+        "remediation": "Set allowPrivilegeEscalation: false in security context"
+    },
+    "Writable root filesystem": {
+        "nist_controls": ["SI-7 (Information System Monitoring)"],
+        "cis_benchmarks": ["5.1.2 (Read-Only Root Filesystem)"],
+        "severity": "HIGH",
+        "remediation": "Set readOnlyRootFilesystem: true in security context"
+    },
+    "Seccomp is not set": {
+        "nist_controls": ["SI-4 (System Monitoring)", "SA-8 (Security Engineering Principles)"],
+        "cis_benchmarks": ["5.5 (Seccomp)"],
+        "severity": "MEDIUM",
+        "remediation": "Set seccompProfile with RuntimeDefault or Localhost profile"
+    },
+    "No resource limits": {
+        "nist_controls": ["CA-7 (Continuous Monitoring)", "SI-2 (Flaw Remediation)"],
+        "cis_benchmarks": ["5.2 (Resource Limits)"],
+        "severity": "MEDIUM",
+        "remediation": "Set CPU and memory limits in resources section"
+    },
+    "No cpu limit": {
+        "nist_controls": ["CA-7 (Continuous Monitoring)"],
+        "cis_benchmarks": ["5.2.1 (Limit CPU)"],
+        "severity": "MEDIUM",
+        "remediation": "Set CPU limit (e.g., 500m) in resources.limits"
+    },
+    "No memory limit": {
+        "nist_controls": ["CA-7 (Continuous Monitoring)"],
+        "cis_benchmarks": ["5.2.2 (Limit Memory)"],
+        "severity": "MEDIUM",
+        "remediation": "Set memory limit (e.g., 512Mi) in resources.limits"
+    },
+    "Capabilities are not set and are not dropped by default": {
+        "nist_controls": ["AC-6 (Least Privilege)", "SI-10 (Information Accuracy)"],
+        "cis_benchmarks": ["5.1.3 (Drop Capabilities)"],
+        "severity": "HIGH",
+        "remediation": "Drop ALL capabilities and add only required capabilities"
+    },
+    "Capabilities are not fully dropped": {
+        "nist_controls": ["AC-6 (Least Privilege)"],
+        "cis_benchmarks": ["5.1.3 (Drop Capabilities)"],
+        "severity": "HIGH",
+        "remediation": "Ensure ALL capabilities are dropped, then add specific required ones"
+    },
+    "Risky host path mount": {
+        "nist_controls": ["AC-3 (Access Control)", "SI-7 (Information System Monitoring)"],
+        "cis_benchmarks": ["5.2.3 (Mutable Container Filesystem)"],
+        "severity": "HIGH",
+        "remediation": "Avoid mounting / /etc /root /var/run/docker.sock /var/log"
+    },
+    "Wildcard permissions": {
+        "nist_controls": ["AC-2 (Account Management)", "AC-3 (Access Control)"],
+        "cis_benchmarks": ["5.4.1 (RBAC)"],
+        "severity": "CRITICAL",
+        "remediation": "Remove wildcard permissions, specify exact verbs and resources"
+    },
+    "can read secrets": {
+        "nist_controls": ["AC-2 (Account Management)", "AC-3 (Access Control)", "SC-7 (Boundary Protection)"],
+        "cis_benchmarks": ["5.4.2 (RBAC Secrets)"],
+        "severity": "CRITICAL",
+        "remediation": "Remove get/list permissions on secrets resource"
+    },
+    "can delete pods": {
+        "nist_controls": ["AC-2 (Account Management)", "AC-3 (Access Control)"],
+        "cis_benchmarks": ["5.4.3 (RBAC Pod Operations)"],
+        "severity": "HIGH",
+        "remediation": "Restrict delete permissions on pods resource"
+    },
+    "may contain sensitive information": {
+        "nist_controls": ["SC-7 (Boundary Protection)", "SI-4 (System Monitoring)"],
+        "cis_benchmarks": ["5.6 (Secret Management)"],
+        "severity": "CRITICAL",
+        "remediation": "Use Kubernetes Secrets instead of environment variables for sensitive data"
+    },
+    "No network policies found": {
+        "nist_controls": ["SC-7 (Boundary Protection)", "CA-3 (System Interconnections)"],
+        "cis_benchmarks": ["5.3 (Network Policies)"],
+        "severity": "CRITICAL",
+        "remediation": "Create NetworkPolicy resources to control pod-to-pod communication"
+    }
+}

@@ -1,0 +1,46 @@
+{
+  "application": {
+    "name": "5G Network Function Hardening Automator",
+    "version": "1.0.0",
+    "description": "Automated security hardening tool for 5G Network Functions"
+  },
+  "paths": {
+    "image_report": "image_vulnerability_report.json",
+    "network_policy_report": "network_policy_report.json",
+    "pod_security_report": "pod_security_report.json",
+    "infrastructure_report": "infrastructure_report.json",
+    "hardener_report": "hardener_report.json",
+    "hardening_folder": "free5gc_hardening",
+    "violation_compliance_map": "config/violation_compliance_map.json"
+  },
+  "kubernetes": {
+    "namespace": "free5gc",
+    "config_file": "~/.kube/config",
+    "helm": {
+      "chart_repo": "towards5gs",
+      "chart_name": "free5gc",
+      "untar_dir": "free5gc_hardening"
+    }
+  },
+  "security": {
+    "trivy": {
+      "severity_levels": ["HIGH", "CRITICAL"],
+      "output_format": "json",
+      "quiet_mode": true
+    },
+    "kube_bench": {
+      "targets": ["node"],
+      "benchmark": "cis-1.24-microk8s",
+      "config_dir": "cfg",
+      "output_format": "json"
+    }
+  },
+  "compliance": {
+    "frameworks": ["NIST 800-53", "CIS Kubernetes Benchmarks"],
+    "enabled": true
+  },
+  "logging": {
+    "level": "INFO",
+    "format": "%(asctime)s - %(levelname)s - %(message)s"
+  }
+}
